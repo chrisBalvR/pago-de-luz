@@ -1,127 +1,136 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("formularioLuz");
-  const modal = document.getElementById("modal");
-  const closeModal = document.querySelector(".close");
-  const tablaBody = document.querySelector("#tablaResultados tbody");
-  const periodoSelect = document.getElementById("periodo");
-  const modalPeriodo = document.getElementById("modalPeriodo");
-  const fechaHora = document.getElementById("fechaHora");
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('formulario');
+  const modal = document.getElementById('modal');
+  const cerrar = document.querySelector('.cerrar');
+  const tablaResultados = document.getElementById('tabla-resultados');
+  const mesAnio = document.querySelector('.mes-anio');
+  const fechaHora = document.querySelector('.fecha-hora');
 
-  const montoInput = document.getElementById("montoTotal");
-  montoInput.addEventListener("blur", () => {
-    let valor = parseFloat(montoInput.value);
-    if (!isNaN(valor)) {
-      montoInput.value = valor.toFixed(2);
+  // Referencias a campos de lectura
+  const aAnt = document.getElementById('aAnt');
+  const aAct = document.getElementById('aAct');
+  const aCons = document.getElementById('aCons');
+  const bAnt = document.getElementById('bAnt');
+  const bAct = document.getElementById('bAct');
+  const bCons = document.getElementById('bCons');
+  const cAnt = document.getElementById('cAnt');
+  const cAct = document.getElementById('cAct');
+  const cCons = document.getElementById('cCons');
+  const montoInput = document.getElementById('monto');
+
+  // 🔄 Calcular consumo automáticamente al llenar lecturas
+  [aAnt, aAct, bAnt, bAct, cAnt, cAct].forEach(input => {
+    input.addEventListener('input', () => {
+      calcularConsumo(aAnt, aAct, aCons);
+      calcularConsumo(bAnt, bAct, bCons);
+      calcularConsumo(cAnt, cAct, cCons);
+    });
+  });
+
+  // 🧠 Autocompletar decimales al salir del campo de monto
+  montoInput.addEventListener('blur', () => {
+    let val = parseFloat(montoInput.value);
+    if (!isNaN(val)) {
+      montoInput.value = val.toFixed(2);
     }
   });
 
-  // Calcular automáticamente consumo
-  ["A", "B", "C"].forEach((letra) => {
-    const lecturaAnterior = document.getElementById(`lecturaAnterior${letra}`);
-    const lecturaActual = document.getElementById(`lecturaActual${letra}`);
-    const consumo = document.getElementById(`consumo${letra}`);
-
-    function actualizarConsumo() {
-      const anterior = parseInt(lecturaAnterior.value) || 0;
-      const actual = parseInt(lecturaActual.value) || 0;
-      const resultado = Math.max(0, actual - anterior);
-      consumo.value = resultado + " kWh";
+  function calcularConsumo(ant, act, cons) {
+    const anterior = parseInt(ant.value);
+    const actual = parseInt(act.value);
+    if (!isNaN(anterior) && !isNaN(actual) && actual >= anterior) {
+      cons.value = `${actual - anterior} kWh`;
+    } else {
+      cons.value = '';
     }
+  }
 
-    lecturaAnterior.addEventListener("input", actualizarConsumo);
-    lecturaActual.addEventListener("input", actualizarConsumo);
-  });
-
-  form.addEventListener("submit", function (e) {
+  // 🧮 Evento principal al enviar el formulario
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
-    const consumoA = parseInt(document.getElementById("consumoA").value) || 0;
-    const consumoB = parseInt(document.getElementById("consumoB").value) || 0;
-    const consumoC = parseInt(document.getElementById("consumoC").value) || 0;
+
+    const mesSeleccionado = document.getElementById('mes').value;
+    const total = parseFloat(montoInput.value);
+    const consumoA = parseInt(aCons.value) || 0;
+    const consumoB = parseInt(bCons.value) || 0;
+    const consumoC = parseInt(cCons.value) || 0;
     const totalConsumo = consumoA + consumoB + consumoC;
 
-    const montoTotal = parseFloat(montoInput.value);
-    if (isNaN(montoTotal) || totalConsumo === 0) return alert("Complete los campos correctamente.");
-
-    const factor = montoTotal / totalConsumo;
-
-    let pagoA = consumoA * factor;
-    let pagoB = consumoB * factor;
-    let pagoC = consumoC * factor;
-
-    // Compensación simbólica para quien paga el recibo (Medidor C)
-    let descuento = 1;
-    let repartido = 0;
-
-    if (consumoA >= 2 && consumoB === 0) {
-      pagoA += descuento;
-      repartido = descuento;
-    } else if (consumoB >= 2 && consumoA === 0) {
-      pagoB += descuento;
-      repartido = descuento;
-    } else if (consumoA >= 2 && consumoB >= 2) {
-      pagoA += 0.50;
-      pagoB += 0.50;
-      repartido = 1;
+    if (totalConsumo === 0 || isNaN(total)) {
+      alert("Verifica que todos los campos estén correctamente llenados.");
+      return;
     }
 
-    pagoC -= repartido;
+    // Calcular proporciones
+    const porcA = consumoA / totalConsumo;
+    const porcB = consumoB / totalConsumo;
+    const porcC = consumoC / totalConsumo;
 
-    // Redondeo a dos decimales
-    pagoA = Math.round(pagoA * 10) / 10;
-    pagoB = Math.round(pagoB * 10) / 10;
-    pagoC = Math.round(pagoC * 10) / 10;
+    // Calcular montos preliminares
+    let montoA = round(total * porcA);
+    let montoB = round(total * porcB);
+    let montoC = round(total * porcC);
 
-    // Ajuste final para mantener sumatoria igual al monto total
-    const suma = pagoA + pagoB + pagoC;
-    const diferencia = Math.round((montoTotal - suma) * 10) / 10;
-    pagoC += diferencia;
+    // Ajuste de "compensación" para quien paga
+    let compensacion = 1.00;
+    let ajusteA = 0, ajusteB = 0;
 
-    // Mostrar resultados
-    const porcentajes = [
-      { nombre: "A", kwh: consumoA, pago: pagoA },
-      { nombre: "B", kwh: consumoB, pago: pagoB },
-      { nombre: "C", kwh: consumoC, pago: pagoC }
+    if (consumoA >= 2 && consumoB >= 2) {
+      ajusteA = round(compensacion / 2);
+      ajusteB = round(compensacion / 2);
+    } else if (consumoA >= 2 && consumoB < 2) {
+      ajusteA = compensacion;
+    } else if (consumoB >= 2 && consumoA < 2) {
+      ajusteB = compensacion;
+    }
+
+    montoA = consumoA > 0 ? round(montoA + ajusteA) : 0;
+    montoB = consumoB > 0 ? round(montoB + ajusteB) : 0;
+    montoC = round(total - montoA - montoB);
+
+    // Generar tabla
+    tablaResultados.innerHTML = '';
+    const data = [
+      { medidor: 'A', consumo: consumoA, porc: porcA * 100, monto: montoA },
+      { medidor: 'B', consumo: consumoB, porc: porcB * 100, monto: montoB },
+      { medidor: 'C', consumo: consumoC, porc: porcC * 100, monto: montoC },
     ];
 
-    tablaBody.innerHTML = "";
-    porcentajes.forEach((medidor) => {
-      const row = document.createElement("tr");
-      const porcentaje = totalConsumo > 0 ? ((medidor.kwh / totalConsumo) * 100).toFixed(1) + "%" : "0%";
-
-      row.innerHTML = `
-        <td>${medidor.nombre}</td>
-        <td>${medidor.kwh} kWh</td>
-        <td>${porcentaje}</td>
-        <td>${medidor.pago.toFixed(2)}</td>
+    data.forEach(d => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.medidor}</td>
+        <td>${d.consumo} kWh</td>
+        <td>${(d.porc).toFixed(0)}%</td>
+        <td>S/ ${d.monto.toFixed(2)}</td>
       `;
-      tablaBody.appendChild(row);
+      tablaResultados.appendChild(tr);
     });
 
-    // Fecha actual
-    const ahora = new Date();
-    const dia = ahora.getDate().toString().padStart(2, "0");
-    const mes = (ahora.getMonth() + 1).toString().padStart(2, "0");
-    const año = ahora.getFullYear();
-    const hora = ahora.toLocaleTimeString("es-PE");
+    // Fecha y periodo
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const periodoFinal = mesSeleccionado === "Diciembre - Enero" ? anio - 1 : anio;
+    const hora = hoy.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fecha = hoy.toLocaleDateString('es-PE');
 
-    fechaHora.textContent = `Fecha: ${dia}/${mes}/${año} | Hora: ${hora}`;
+    mesAnio.textContent = `${mesSeleccionado} de ${periodoFinal}`;
+    fechaHora.textContent = `Fecha y hora de lectura: ${fecha} - ${hora}`;
 
-    // Calcular año del periodo
-    const periodo = periodoSelect.value;
-    const esDicEne = periodo === "Diciembre - Enero";
-    const periodoTexto = `${periodo} de ${esDicEne ? año - 1 : año}`;
-
-    modalPeriodo.textContent = periodoTexto;
-    modal.style.display = "block";
+    modal.style.display = 'block';
   });
 
-  closeModal.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
+  cerrar.onclick = () => {
+    modal.style.display = 'none';
+  };
 
-  window.addEventListener("click", (e) => {
+  window.onclick = e => {
     if (e.target === modal) {
-      modal.style.display = "none";
+      modal.style.display = 'none';
     }
-  });
+  };
+
+  function round(num) {
+    return Math.round(num * 10) / 10;
+  }
 });
