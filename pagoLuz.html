@@ -3,77 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Distribución de Pago de Luz</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Consumo Eléctrico Compartido</title>
+  <link rel="stylesheet" href="estilos.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Formulario de Cálculo de Luz Compartida</h1>
-    <form id="luzForm">
-      <label for="periodo">Periodo de Consumo:</label>
-      <select id="periodo" required>
-        <option value="">--Seleccionar--</option>
-        <option value="Enero - Febrero">Enero - Febrero</option>
-        <option value="Febrero - Marzo">Febrero - Marzo</option>
-        <option value="Marzo - Abril">Marzo - Abril</option>
-        <option value="Abril - Mayo">Abril - Mayo</option>
-        <option value="Mayo - Junio">Mayo - Junio</option>
-        <option value="Junio - Julio">Junio - Julio</option>
-        <option value="Julio - Agosto">Julio - Agosto</option>
-        <option value="Agosto - Septiembre">Agosto - Septiembre</option>
-        <option value="Septiembre - Octubre">Septiembre - Octubre</option>
-        <option value="Octubre - Noviembre">Octubre - Noviembre</option>
-        <option value="Noviembre - Diciembre">Noviembre - Diciembre</option>
-        <option value="Diciembre - Enero">Diciembre - Enero</option>
-      </select>
+    <h1 class="form-title">Consumo Eléctrico Compartido</h1>
+    <h2 class="sub-title">Suministro 1943683 - Jr. Baritina 450</h2>
 
-      <label for="montoTotal">Monto total del recibo (S/):</label>
-      <input type="number" id="montoTotal" step="0.01" required />
+    <form id="formularioLuz">
+      <div class="input-group">
+        <label for="periodo">Periodo de Consumo:</label>
+        <select id="periodo" name="periodo">
+          <option value="" disabled selected>Seleccione un periodo</option>
+          <option value="Enero - Febrero">Enero - Febrero</option>
+          <option value="Febrero - Marzo">Febrero - Marzo</option>
+          <option value="Marzo - Abril">Marzo - Abril</option>
+          <option value="Abril - Mayo">Abril - Mayo</option>
+          <option value="Mayo - Junio">Mayo - Junio</option>
+          <option value="Junio - Julio">Junio - Julio</option>
+          <option value="Julio - Agosto">Julio - Agosto</option>
+          <option value="Agosto - Septiembre">Agosto - Septiembre</option>
+          <option value="Septiembre - Octubre">Septiembre - Octubre</option>
+          <option value="Octubre - Noviembre">Octubre - Noviembre</option>
+          <option value="Noviembre - Diciembre">Noviembre - Diciembre</option>
+          <option value="Diciembre - Enero">Diciembre - Enero</option>
+        </select>
+      </div>
 
-      <fieldset>
-        <legend>Consumo Medidor A</legend>
-        <label for="lecturaAAnterior">Lectura Anterior:</label>
-        <input type="number" id="lecturaAAnterior" min="0" required />
-        <label for="lecturaAActual">Lectura Actual:</label>
-        <input type="number" id="lecturaAActual" min="0" required />
-        <label for="consumoA">Consumo Total (kWh):</label>
-        <input type="number" id="consumoA" readonly />
-      </fieldset>
+      <div class="input-group">
+        <label for="montoTotal">Monto total del recibo (S/):</label>
+        <input type="text" id="montoTotal" name="montoTotal" placeholder="0.00" />
+      </div>
 
-      <fieldset>
-        <legend>Consumo Medidor B</legend>
-        <label for="lecturaBAnterior">Lectura Anterior:</label>
-        <input type="number" id="lecturaBAnterior" min="0" required />
-        <label for="lecturaBActual">Lectura Actual:</label>
-        <input type="number" id="lecturaBActual" min="0" required />
-        <label for="consumoB">Consumo Total (kWh):</label>
-        <input type="number" id="consumoB" readonly />
-      </fieldset>
+      <!-- Medidor A -->
+      <div class="input-group medidor-grupo">
+        <h3>Medidor A</h3>
+        <div class="lecturas">
+          <input type="number" id="lecturaAnteriorA" placeholder="Lectura anterior" />
+          <input type="number" id="lecturaActualA" placeholder="Lectura actual" />
+        </div>
+        <input type="text" id="consumoA" placeholder="Consumo Total (kWh)" readonly />
+      </div>
 
-      <fieldset>
-        <legend>Consumo Medidor C</legend>
-        <label for="lecturaCAnterior">Lectura Anterior:</label>
-        <input type="number" id="lecturaCAnterior" min="0" required />
-        <label for="lecturaCActual">Lectura Actual:</label>
-        <input type="number" id="lecturaCActual" min="0" required />
-        <label for="consumoC">Consumo Total (kWh):</label>
-        <input type="number" id="consumoC" readonly />
-      </fieldset>
+      <!-- Medidor B -->
+      <div class="input-group medidor-grupo">
+        <h3>Medidor B</h3>
+        <div class="lecturas">
+          <input type="number" id="lecturaAnteriorB" placeholder="Lectura anterior" />
+          <input type="number" id="lecturaActualB" placeholder="Lectura actual" />
+        </div>
+        <input type="text" id="consumoB" placeholder="Consumo Total (kWh)" readonly />
+      </div>
 
-      <button type="submit">Calcular pagos de luz</button>
+      <!-- Medidor C -->
+      <div class="input-group medidor-grupo">
+        <h3>Medidor C</h3>
+        <div class="lecturas">
+          <input type="number" id="lecturaAnteriorC" placeholder="Lectura anterior" />
+          <input type="number" id="lecturaActualC" placeholder="Lectura actual" />
+        </div>
+        <input type="text" id="consumoC" placeholder="Consumo Total (kWh)" readonly />
+      </div>
+
+      <button type="submit" id="btnCalcular">Calcular pagos de luz</button>
     </form>
-  </div>
 
-  <!-- Modal -->
-  <div id="modal" class="modal">
-    <div class="modal-content" id="modalContent">
-      <span class="close" id="closeModal">&times;</span>
-      <h2 style="text-align: center">Distribución del pago de luz</h2>
-      <h3 style="text-align: center" id="periodoTitulo"></h3>
-      <div id="resultado"></div>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 class="modal-title">Resumen del Reparto del Pago de Luz</h2>
+        <p class="modal-subtitle">Correspondiente a:</p>
+        <p id="modalPeriodo" class="modal-periodo"></p>
+        <table id="tablaResultados">
+          <thead>
+            <tr>
+              <th>Medidor</th>
+              <th>kWh Consumidos</th>
+              <th>% Consumo</th>
+              <th>Importe S/</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="fechaHora" class="modal-fecha-hora"></p>
+      </div>
     </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
